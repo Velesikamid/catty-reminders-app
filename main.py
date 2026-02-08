@@ -130,11 +130,27 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
             subprocess.run(["git", "checkout", branch], cwd=tmpdir, check=True)
 
+            # Создаём virtual environment
+            subprocess.run(["python3", "-m", "venv", ".venv"], cwd=tmpdir, check=True)
+
+            # Активируем virtual environment
+            subprocess.run(["source", ".venv/bin/activate"], cwd=tmpdir, check=True)
+
+            # Устанавливаем зависимости
+            subprocess.run(
+                ["pip", "install", "-r", "requirements.txt"], cwd=tmpdir, check=True
+            )
+
             # Запускаем тесты перед деплоем
             print(f"      - Запуск тестов...")
             try:
+                subprocess.run(
+                    ["playwright", "install", "--with-deps", "chromium"],
+                    cwd=tmpdir,
+                    check=True,
+                )
                 result = subprocess.run(
-                    ["./test.sh"],
+                    ["python3", "-m", "pytest"],
                     cwd=tmpdir,
                     check=True,
                     capture_output=True,
@@ -145,7 +161,19 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
                 # Только если тесты прошли - запускаем деплой
                 print(f"      - Запуск деплоя...")
-                subprocess.run(["./deploy.sh"], cwd=tmpdir, check=True)
+                subprocess.run(
+                    [
+                        "uvicorn",
+                        "app.main:app",
+                        "--reload",
+                        "--host",
+                        "0.0.0.0",
+                        "--port",
+                        "8181",
+                    ],
+                    cwd=tmpdir,
+                    check=True,
+                )
                 print(f"      ✅ Деплой завершен успешно!")
 
             except subprocess.CalledProcessError as e:
