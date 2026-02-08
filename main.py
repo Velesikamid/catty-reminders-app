@@ -130,27 +130,34 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
             subprocess.run(["git", "checkout", branch], cwd=tmpdir, check=True)
 
-            # Создаём virtual environment
-            subprocess.run(["python3", "-m", "venv", ".venv"], cwd=tmpdir, check=True)
+            # Создаём и активируем virtual environment
+            venv_path = os.path.join(tmpdir, ".venv")
+            subprocess.run(["python3", "-m", "venv", venv_path], check=True)
 
-            # Активируем virtual environment
-            subprocess.run(["source", ".venv/bin/activate"], cwd=tmpdir, check=True)
+            venv_python = os.path.join(venv_path, "bin", "python3")
+            venv_pip = os.path.join(venv_path, "bin", "pip")
 
             # Устанавливаем зависимости
-            subprocess.run(
-                ["pip", "install", "-r", "requirements.txt"], cwd=tmpdir, check=True
-            )
+            req_file = os.path.join(tmpdir, "requirements.txt")
+            if os.path.exists(req_file):
+                subprocess.run([venv_pip, "install", "-r", req_file], check=True)
 
             # Запускаем тесты перед деплоем
             print(f"      - Запуск тестов...")
             try:
                 subprocess.run(
-                    ["playwright", "install", "--with-deps", "chromium"],
-                    cwd=tmpdir,
+                    [
+                        venv_python,
+                        "-m",
+                        "playwright",
+                        "install",
+                        "--with-deps",
+                        "chromium",
+                    ],
                     check=True,
                 )
                 result = subprocess.run(
-                    ["python3", "-m", "pytest"],
+                    [venv_python, "-m", "pytest"],
                     cwd=tmpdir,
                     check=True,
                     capture_output=True,
@@ -161,17 +168,12 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
                 # Только если тесты прошли - запускаем деплой
                 print(f"      - Запуск деплоя...")
+                target_dir = "/opt/catty-reminders-app"
                 subprocess.run(
-                    [
-                        "uvicorn",
-                        "app.main:app",
-                        "--reload",
-                        "--host",
-                        "0.0.0.0",
-                        "--port",
-                        "8181",
-                    ],
-                    cwd=tmpdir,
+                    ["sudo", "cp", "-r", f"{tmpdir}/*", target_dir], check=True
+                )
+                subprocess.run(
+                    ["sudo", "systemctl", "restart", "catty-reminders-app.service"],
                     check=True,
                 )
                 print(f"      ✅ Деплой завершен успешно!")
