@@ -162,6 +162,36 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 subprocess.run(
                     f"sudo cp -r {tmpdir}/* {target_dir}", shell=True, check=True
                 )
+                service_file = "/etc/systemd/system/catty-reminders-app.service"
+                if not os.path.exists(service_file):
+                    print(f"      - Создание systemd сервиса...")
+                    service_content = f"""[Unit]
+Description=Catty Reminders App
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory={target_dir}
+Environment="PATH={target_dir}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart={target_dir}/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8181
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+"""
+                    subprocess.run(
+                        f"echo '{service_content}' | sudo tee {service_file} > /dev/null",
+                        shell=True,
+                        check=True,
+                    )
+                    subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+                    subprocess.run(
+                        ["sudo", "systemctl", "enable", "catty-reminders-app.service"],
+                        check=True,
+                    )
+
                 subprocess.run(
                     ["sudo", "systemctl", "restart", "catty-reminders-app.service"],
                     check=True,
