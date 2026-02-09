@@ -157,7 +157,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
                 # Только если тесты прошли - запускаем деплой
                 print(f"      - Запуск деплоя...")
-                target_dir = "Desktop/catty-reminders-app/build"
+                target_dir = "~/Desktop/catty-reminders-app/build"
                 subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
                 subprocess.run(
                     f"sudo cp -r {tmpdir}/* {target_dir}", shell=True, check=True
