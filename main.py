@@ -160,7 +160,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 target_dir = "/opt/catty-reminders-app"
                 subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
                 subprocess.run(
-                    f"sudo cp -r {tmpdir}/* {target_dir}", shell=True, check=True
+                    f"sudo cp -r {tmpdir} {target_dir}", shell=True, check=True
                 )
                 service_file = "/etc/systemd/system/catty-reminders-app.service"
                 if not os.path.exists(service_file):
