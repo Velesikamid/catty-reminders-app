@@ -174,7 +174,7 @@ Type=simple
 User=www-data
 WorkingDirectory={target_dir}
 Environment="PATH=../.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart={target_dir}/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8181
+ExecStart=../.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8181
 Restart=always
 RestartSec=10
 
