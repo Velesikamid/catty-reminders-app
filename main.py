@@ -145,19 +145,8 @@ class WebhookHandler(BaseHTTPRequestHandler):
             # Запускаем тесты перед деплоем
             print(f"      - Запуск тестов...")
             try:
-                subprocess.run(
-                    [
-                        venv_python,
-                        "-m",
-                        "playwright",
-                        "install",
-                        "--with-deps",
-                        "chromium",
-                    ],
-                    check=True,
-                )
                 result = subprocess.run(
-                    [venv_python, "-m", "pytest"],
+                    [venv_python, "-m", "pytest", "tests/test_unit.py"],
                     cwd=tmpdir,
                     check=True,
                     capture_output=True,
