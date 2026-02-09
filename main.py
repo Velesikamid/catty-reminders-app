@@ -157,11 +157,11 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
                 # Только если тесты прошли - запускаем деплой
                 print(f"      - Запуск деплоя...")
-                """target_dir = "/opt/catty-reminders-app"
+                target_dir = "/Desktop/catty-reminders-app/build"
                 subprocess.run(["sudo", "mkdir", "-p", target_dir], check=True)
                 subprocess.run(
                     f"sudo cp -r {tmpdir} {target_dir}", shell=True, check=True
-                )"""
+                )
                 service_file = "/etc/systemd/system/catty-reminders-app.service"
                 if not os.path.exists(service_file):
                     print(f"      - Создание systemd сервиса...")
@@ -172,9 +172,9 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory={tmpdir}
-Environment="PATH={tmpdir}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart={tmpdir}/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8181
+WorkingDirectory={target_dir}
+Environment="PATH=../.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart={target_dir}/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8181
 Restart=always
 RestartSec=10
 
