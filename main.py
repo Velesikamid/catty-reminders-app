@@ -159,7 +159,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 print(f"      - Запуск деплоя...")
                 target_dir = "/opt/catty-reminders-app"
                 subprocess.run(
-                    ["sudo", "cp", "-r", f"{tmpdir}/*", target_dir], check=True
+                    f"sudo cp -r {tmpdir}/* {target_dir}", shell=True, check=True
                 )
                 subprocess.run(
                     ["sudo", "systemctl", "restart", "catty-reminders-app.service"],
