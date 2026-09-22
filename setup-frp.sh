@@ -25,5 +25,3 @@ remotePort = $SSH_PORT
 EOF
 
 sudo systemctl restart frpc
-
-ssh -p $SSH_PORT $USER@$PROXY
