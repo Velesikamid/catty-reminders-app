@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:?}
+      MARIADB_USER: ${MARIADB_USER:?}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+
+  app:
+    image: ${IMAGE:?}
+    restart: unless-stopped
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./config.json:/catty-reminders-app/config.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
